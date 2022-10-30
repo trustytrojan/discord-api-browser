@@ -11,17 +11,21 @@ createServer(async (req, res) => {
   const redirect = (x) => res.writeHead(302, { location: `${url.origin}${x}` }).end();
   const sendHtml = (x) => { res.write(readFileSync(x ?? `.${url.pathname}`)); res.end(); };
   switch(url.pathname) {
+
     case '/': {
       const redirect_path = ((client.user) ? '/logged-in' : '/login')+'.html';
       redirect(redirect_path);
     } break;
+
     case '/login': {
       if(!url.searchParams.has('token')) redirect('/login.html');
       const token = url.searchParams.get('token');
       await client.login(token);
       redirect('/main-menu.html');
     } break;
+
     case '/login.html': sendHtml(); break;
+
     case '/main-menu.html': {
       if(!client.user) { redirect('/login.html'); break; }
       const html = readFileSync('./main-menu.html').toString()
@@ -30,6 +34,11 @@ createServer(async (req, res) => {
       res.write(html);
       res.end();
     } break;
+
+    case '/guilds.html': {
+      
+    }
+
     default: {
       res.writeHead(404);
       sendHtml('./page-not-found.html');
