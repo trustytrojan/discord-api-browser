@@ -1,7 +1,6 @@
-// Author: github.com/trustytrojan
-
-const readline = require('readline')
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+const { stdout, stdin } = process;
+const { createInterface } = require('readline');
+const rl = createInterface({ input: stdin, output: stdout });
 
 /**
  * Mimicking Python's input().
@@ -9,8 +8,8 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
  * @returns {Promise<string>} resolves when user hits enter
  */
 function input(query) {
-  return new Promise(resolve => rl.question(query ?? '', (answer) => resolve(answer)))
+  return new Promise(resolve => rl.question(query ?? '', (answer) => resolve(answer)));
 }
 
 // Save yourself a few lines of code and pass the entire readline module and the interface!!!
-module.exports = { readline, rl, input }
+module.exports = input;
