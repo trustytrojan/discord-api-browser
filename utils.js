@@ -1,22 +1,16 @@
-const input = require('./input');
-
 module.exports = {
 
   /**
-   * @returns {Promise<string>}
+   * Erases every occurrence of every string in `arr` from `str`. Returns the new string.
+   * @param {string} str 
+   * @param {string[]} arr 
+   * @return {string}
    */
-  async get_token() {
-    const token_file = './token.json'
-    console.log('Reading token from disk...');
-    try { return require(token_file); }
-    catch(err) { console.log('token file not found.'); }
-    // const token = await input('Enter your Discord user token: ');
-    // switch(await input('Do you want to save your token? (Yes/No) ')) {
-    //   case 'yes':
-    //   case 'y':
-    //     writeFileSync(token_file, JSON.stringify(token));
-    // }
-    return token;
+  string_erase_all(str, arr) {
+    for(const s of arr) {
+      str = str.replaceAll(s, '');
+    }
+    return str;
   }
 
 };
