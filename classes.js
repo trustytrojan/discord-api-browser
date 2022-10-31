@@ -78,14 +78,14 @@ class UserManager {
     const resp = await fetch(url, init);
     const obj = await resp.json();
     if(obj.message)
-      throw obj.message;
+      throw obj;
     return this.cache.ensure(obj.id, new ClientUser(obj));
   }
 }
 
 class Guild {
   /** @type {string} */ id;
-  /** @type {ChannelManager} */ channels;
+  /** @type {string} */ name;
 
   constructor(o) {
     for(const k in this) {
