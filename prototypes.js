@@ -21,4 +21,18 @@ Array.prototype.remove_empty_strings = function() {
     if(this[i].length !== 0) continue;
     this.splice(i, 1);
   }
+  return this;
+}
+
+/**
+ * Erases every occurrence of every string in `arr` from `this`. Returns the resulting string.
+ * @param {string[]} arr 
+ * @return {string} returns a NEW string
+ */
+String.prototype.eraseAll = function(arr) {
+  let str = this;
+  for(const s of arr) {
+    str = str.replaceAll(s, '');
+  }
+  return str;
 }

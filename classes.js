@@ -42,14 +42,18 @@ class ClientUser extends User {
 
 class UserManager {
   /** @type {Map<string,User>} */ cache;
-  /** @type {string} */ #token;
+  /** @type {string} */ token;
 
   /**
    * @param {string} token 
    */
-  constructor(token) {
-    this.#token = token;
+  constructor() {
     this.cache = new Map();
+  }
+
+  checkToken() {
+    if(!this.token)
+      throw "UserManager: I don't have a token!";
   }
 
   /**
@@ -57,14 +61,19 @@ class UserManager {
    * @returns {Promise<User>}
    */
   async fetch(id) {
+    this.checkToken();
+    {
+      const stored_user = this.cache.get(id);
+      if(stored_user) return stored_user;
+    }
     if(this.cache.has(id)) return this.cache.get(id);
     const url = `${base_url}/users/${id}`;
-    const headers = { authorization: this.#token };
+    const headers = { authorization: this.token };
     const init = { method: 'GET', headers };
     const resp = await fetch(url, init);
     const obj = await resp.json();
     if(obj.message)
-      throw obj.message;
+      throw obj;
     return this.cache.ensure(id, new User(obj));
   }
 
@@ -72,8 +81,9 @@ class UserManager {
    * @returns {Promise<ClientUser>}
    */
   async fetch_me() {
+    this.checkToken();
     const url = `${base_url}/users/@me`;
-    const headers = { authorization: this.#token };
+    const headers = { authorization: this.token };
     const init = { method: 'GET', headers };
     const resp = await fetch(url, init);
     const obj = await resp.json();
@@ -96,13 +106,12 @@ class Guild {
 
 class GuildManager {
   /** @type {Map<string,Guild>} */ cache;
-  /** @type {string} */ #token;
+  /** @type {string} */ token;
 
   /**
    * @param {string} token 
    */
-  constructor(token) {
-    this.#token = token;
+  constructor() {
     this.cache = new Map();
   }
 
@@ -111,33 +120,39 @@ class GuildManager {
    * @returns {Promise<Guild>}
    */
   async fetch(id) {
-    if(this.cache.has(id)) return this.cache.get(id);
+    {
+      const stored_guild = this.cache.get(id);
+      if(stored_guild) return stored_guild;
+    }
     const url = `${base_url}/guilds/${id}`;
-    const headers = { authorization: this.#token };
+    const headers = { authorization: this.token };
     const init = { method: 'GET', headers };
     const resp = await fetch(url, init);
     const obj = await resp.json();
-    if(obj.message === '401: Unauthorized')
-      throw obj.message;
-    if(obj.errors)
-      throw obj.errors.guild_id._errors[0].message;
+    if(obj.message)
+      throw obj;
     return this.cache.ensure(id, new Guild(obj));
   }
 }
 
 class Client {
-  /** @type {string} */ #token;
+  /** @type {string} */ token;
   /** @type {ClientUser} */ user;
   /** @type {UserManager} */ users;
   /** @type {GuildManager} */ guilds;
+
+  constructor() {
+    this.users = new UserManager();
+    this.guilds = new GuildManager();
+  }
 
   /**
    * @param {string} token 
    */
   async login(token) {
-    this.#token = token;
-    this.users = new UserManager(token);
-    this.guilds = new GuildManager(token);
+    this.token = token;
+    this.users.token = token;
+    this.guilds.token = token;
     this.user = await this.users.fetch_me();
   }
 }

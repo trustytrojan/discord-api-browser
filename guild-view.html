@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+  * {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  table, th, td {
+    border: 1px solid black;
+    border-radius: 2px;
+  }
+  th, td {
+    padding: 2px
+  }
+</style>
+
+<body>
+
+<h1>Discord API Browser</h1>
+
+<p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
+
+<h2>Saved Guilds</h2>
+
+<table>
+  <!-- 
+    Template for JS: 
+    <tr>
+      <th>key</th>
+      <td>${value}</td>
+    </tr>
+  -->
+  ${guild}
+</table><br>
+
+<a href="/add-guilds">Add Guilds</a>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 const { once } = require('events');
-const { writeFileSync, readFileSync, readdirSync } = require('fs');
+const { ServerResponse, IncomingMessage, createServer } = require('http');
 const { Client } = require('./classes');
-const { string_erase_all } = require('./utils')
+const { readSave, insertClientInfoIntoHtml, readHtmlFiles, writeData } = require('./utils');
 
 const port = 8080;
 const client = new Client();
@@ -11,17 +11,40 @@ const html_files = new Map();
 
 let current_error;
 
-for(let file of readdirSync('.')) {
-  if(!file.endsWith('.html')) continue;
-  html_files.set(file.replaceAll('.html', ''), readFileSync(file).toString());
-}
+readHtmlFiles(html_files);
 
 // NEXT: SAVE TOKEN, USER ID, AND GUILD IDS TO A JSON FILE
+// THEN CHANNEL IDS FOR ONLY DM CHANNELS
 
-//console.log(html_files);
-//process.exit();
+function kill() {
+  const log = (x) => console.log(`kill: ${x}`);
+  log('Process is being killed');
+  writeData(client);
+  log('Now exiting');
+  process.exit();
+}
 
-require('http').createServer(async (req, res) => {
+process.on('uncaughtException', (err) => { console.error(err); kill(); });
+process.on('SIGINT', kill);
+process.on('SIGTERM', kill);
+
+async function main() {
+  if(await readSave(client))
+    insertClientInfoIntoHtml(html_files, client);
+  createServer(server).listen(port);
+  console.log(`Listening on port ${port}`);
+}
+
+/**
+ * @param {IncomingMessage} req 
+ * @param {ServerResponse<IncomingMessage> & { req: IncomingMessage; }} res 
+ */
+async function server(req, res) {
+  
+  const log = (x) => console.log(`server: ${x}`);
+
+  log(`Incoming request from address [${req.socket.remoteAddress}:${req.socket.remotePort}]`);
+
   const { origin, pathname } = new URL(`http://${req.headers.host}${req.url}`);
 
   /** @param {string} new_path */
@@ -46,48 +69,62 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
-  switch(pathname) {
+  const path_split = pathname.split('/');
+  path_split.shift();
+  switch(path_split[0]) {
 
     // add logout button to every page
 
-    case '/': sendHtmlFile('main-menu'); break;
+    case '': sendHtmlFile('main-menu'); break;
 
     // multiple tokens? worry about later
-    case '/login': {
+    case 'login': {
       switch(req.method) {
         case 'GET': {
-          try { await client.login(require('./token.json')); }
-          catch(err) { sendHtmlFile(); }
+          if(client.user) { break; }
+          sendHtmlFile();
         } break;
         case 'POST': {
-          const token = string_erase_all(await get_post_data(), ['token=', '\r\n']);
+          const token = (await get_post_data()).eraseAll(['token=', '\r\n']);
           try { await client.login(token); }
           catch(err) { current_error = err; redirect('/login-error'); break; }
+          insertClientInfoIntoHtml(html_files, client);
         }
       }
-      for(const [k,v] of html_files)
-        html_files.set(k, v.replace('${client.user.id}', client.user.id).replace('${client.user.tag}', client.user.tag));
       redirect('/');
     } break;
 
-    case '/guilds': {
-      let html = html_files.get('guilds');
-      if(client.guilds.cache.size === 0)
-        html = html.replace('${guilds}', 'No Saved Guilds');
-      else {
-        let g_str = '';
-        for(const { name, id } of client.guilds.cache.values())
-          g_str += `<tr><td><a href="/guilds/${id}">${id}</a></td><td><a href="/guilds/${id}">${name}</a></td></tr>`;
-        html = html.replace('${guilds}', g_str);
+    case 'guilds': {
+      let html;
+      switch(path_split[1]) {
+        case undefined: {
+          html = html_files.get('guilds');
+          if(client.guilds.cache.size === 0)
+            html = html.replace('${guilds}', 'No Saved Guilds');
+          else {
+            let g_str = '';
+            for(const { name, id } of client.guilds.cache.values())
+              g_str += `<tr><td><a href="/guilds/${id}">${id}</a></td><td><a href="/guilds/${id}">${name}</a></td></tr>`;
+            html = html.replace('${guilds}', g_str);
+          }
+        } break;
+        default: {
+          const guild = await client.guilds.fetch(path_split[1]);
+          html = html_files.get('guild-view');
+          let g_str = '';
+          for(const k in guild)
+            g_str += `<tr><th>${k}</th><td>${guild[k]}</td></tr>`;
+          html = html.replace('${guild}', g_str);
+        }
       }
       res.write(html);
       res.end();
     } break;
 
-    case '/add-guilds': switch(req.method) {
+    case 'add-guilds': switch(req.method) {
       case 'GET': sendHtmlFile(); break;
       case 'POST': {
-        const guild_ids = string_erase_all(await get_post_data(), ['guilds=']).split('\r\n');
+        const guild_ids = (await get_post_data()).eraseAll(['guilds=']).split('\r\n');
         guild_ids.remove_empty_strings(); // defined in prototypes.js
         for(const id of guild_ids)
           await client.guilds.fetch(id);
@@ -95,13 +132,12 @@ require('http').createServer(async (req, res) => {
       }
     } break;
 
-    case '/users': {
+    case 'users': {
 
     } break;
 
-    case '/login-error': {
-      const html = html_files.get('login-error');
-      html = html.replace('${error}', current_error);
+    case 'login-error': {
+      let html = html_files.get('login-error').replace('${error}', current_error);
       sendHtml(html);
     } break;
 
@@ -110,4 +146,6 @@ require('http').createServer(async (req, res) => {
       sendHtmlFile('page-not-found');
     }
   }
-}).listen(port);
+}
+
+main();

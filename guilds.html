@@ -2,9 +2,22 @@
 <html>
 
 <style>
+  * {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  table {
+    border-collapse: collapse;
+  }
   table, th, td {
     border: 1px solid black;
-    border-radius: 2px;
+  }
+  th, td {
+    padding: 2px
+  }
+  .btnlink {
+    background-color: deepskyblue;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
   }
 </style>
 
@@ -19,8 +32,8 @@
 <table>
   <thead>
     <tr>
-      <th>ID</th>
-      <th>Name</th>
+      <th>id</th>
+      <th>name</th>
     </tr>
   </thead>
   <tbody>
@@ -40,6 +53,7 @@
 </table><br>
 
 <a href="/add-guilds">Add Guilds</a>
+<a href="/" class=".btnlink"></a>
 
 </body>
 </html>
