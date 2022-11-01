@@ -16,6 +16,8 @@ for(let file of readdirSync('.')) {
   html_files.set(file.replaceAll('.html', ''), readFileSync(file).toString());
 }
 
+// NEXT: SAVE TOKEN, USER ID, AND GUILD IDS TO A JSON FILE
+
 //console.log(html_files);
 //process.exit();
 
@@ -38,11 +40,17 @@ require('http').createServer(async (req, res) => {
     return data;
   }
 
+  // if not logged in, force user to log in
+  if(!client.user && pathname !== '/login') {
+    redirect('/login');
+    return;
+  }
+
   switch(pathname) {
 
     // add logout button to every page
 
-    case '/': redirect(client.user ? '/main-menu' : '/login'); break;
+    case '/': sendHtmlFile('main-menu'); break;
 
     // multiple tokens? worry about later
     case '/login': {
@@ -59,44 +67,36 @@ require('http').createServer(async (req, res) => {
       }
       for(const [k,v] of html_files)
         html_files.set(k, v.replace('${client.user.id}', client.user.id).replace('${client.user.tag}', client.user.tag));
-      redirect('/main-menu');
-    } break;
-
-    case '/main-menu': {
-      if(!client.user) { redirect('/login'); break; }
-      sendHtmlFile();
+      redirect('/');
     } break;
 
     case '/guilds': {
-      if(!client.user) { redirect('/login'); break; }
       let html = html_files.get('guilds');
       if(client.guilds.cache.size === 0)
         html = html.replace('${guilds}', 'No Saved Guilds');
       else {
         let g_str = '';
         for(const { name, id } of client.guilds.cache.values())
-          g_str += `<li><a href="/guilds/${id}">${id} ${name}</a></li>`;
+          g_str += `<tr><td><a href="/guilds/${id}">${id}</a></td><td><a href="/guilds/${id}">${name}</a></td></tr>`;
         html = html.replace('${guilds}', g_str);
       }
       res.write(html);
       res.end();
     } break;
 
-    case '/add-guilds': {
-      switch(req.method) {
-        case 'GET': sendHtmlFile(); break;
-        case 'POST': {
-          const guild_ids = string_erase_all(await get_post_data(), ['guilds=']).split('\r\n');
-          guild_ids.remove_empty_strings(); // defined in prototypes.js
-          for(const id of guild_ids)
-            await client.guilds.fetch(id);
-          redirect('/guilds');
-        }
+    case '/add-guilds': switch(req.method) {
+      case 'GET': sendHtmlFile(); break;
+      case 'POST': {
+        const guild_ids = string_erase_all(await get_post_data(), ['guilds=']).split('\r\n');
+        guild_ids.remove_empty_strings(); // defined in prototypes.js
+        for(const id of guild_ids)
+          await client.guilds.fetch(id);
+        redirect('/guilds');
       }
     } break;
 
     case '/users': {
-      if(!client.user) { redirect('/login'); break; }
+
     } break;
 
     case '/login-error': {
