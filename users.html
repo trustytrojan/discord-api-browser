@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+  * {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  table, th, td {
+    border: 1px solid black;
+  }
+  th, td {
+    padding: 2px
+  }
+  .btnlink {
+    background-color: deepskyblue;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+</style>
+
+<body>
+
+<h1>Discord API Browser</h1>
+
+<p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
+
+<h2>Saved Users</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>tag</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- 
+      Template for JS: 
+      <tr>
+        <td>
+          <a href="/guilds/${guild.id}">${guild.id}</a>
+        </td>
+        <td>
+          <a href="/guilds/${guild.id}">${guild.name}</a>
+        </td>
+      </tr>
+    -->
+    ${guilds}
+  </tbody>
+</table><br>
+
+<a href="/add-guilds">Add Guilds</a>
+<a href="/" class=".btnlink"></a>
+
+</body>
+</html>
