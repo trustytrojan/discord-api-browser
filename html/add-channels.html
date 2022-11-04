@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Discord API Browser</h1>
+
+<p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
+
+<h2>Add Channels</h2>
+
+<p>You should really only be adding DM channels here, since channels belonging to guilds are automatically fetched.</p>
+
+<form method="post" enctype="text/plain">
+  Paste Discord channel IDs below, with a new line for each ID:<br>
+  <textarea name="channels" required="true" rows="10" cols="20"></textarea><br>
+  <input type="submit" value="Submit">
+</form>
+
+<a href="/channels">Back to Channels</a>
+
+</body>
+</html>

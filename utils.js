@@ -1,4 +1,4 @@
-const { Client } = require('./classes');
+const Client = require('./classes/Client');
 const { writeFileSync, readFileSync, readdirSync } = require('fs');
 
 const save_filename = './save.json';
@@ -58,7 +58,7 @@ module.exports = {
   readHtmlFiles(html_files) {
     const log = (x) => console.log(`readHtmlFiles: ${x}`);
     log('Reading all HTML files into memory...');
-    for(const file of readdirSync('.')) {
+    for(const file of readdirSync('./html')) {
       if(!file.endsWith('.html')) continue;
       html_files.set(file.replaceAll('.html', ''), readFileSync(file).toString());
     }

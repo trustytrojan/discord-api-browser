@@ -1,15 +1,15 @@
 const { once } = require('events');
 const { ServerResponse, IncomingMessage, createServer } = require('http');
-const { Client } = require('./classes');
 const { readSave, insertClientInfoIntoHtml, readHtmlFiles, writeData } = require('./utils');
+const Client = require('./classes/Client');
+require('./ignore-ExperimentalWarning');
+require('./prototypes');
 
 const port = 8080;
 const client = new Client();
 
 /** @type {Map<string,string>} */
 const html_files = new Map();
-
-let current_error;
 
 readHtmlFiles(html_files);
 
@@ -52,11 +52,11 @@ async function server(req, res) {
   /** @param {string} new_path */
   const redirect = (new_path) => res.writeHead(302, { location: `${origin}${new_path}` }).end();
 
-  /** @param {string} html */
-  const sendHtml = (html) => res.end(html);
-
   /** @param {string} filename */
   const sendHtmlFile = (filename) => res.end(html_files.get(filename ?? pathname.replace('/', '')));
+
+  /** @param {Error} err */
+  const sendError = (err) => res.end(html_files.get('error').replace('${error}', JSON.stringify(err, null, '  ')));
 
   async function get_post_data() {
     let data = '';
@@ -73,9 +73,9 @@ async function server(req, res) {
 
   const path_split = pathname.split('/');
   path_split.shift();
-  switch(path_split[0]) {
+  try { switch(path_split[0]) {
 
-    // this is the "/" path
+    // this is the root path
     case '': sendHtmlFile('main-menu'); break;
 
     // multiple tokens? worry about later
@@ -120,8 +120,7 @@ async function server(req, res) {
             .replace('${guild}', guilds_table);
         }
       }
-      res.write(html);
-      res.end();
+      res.end(html);
     } break;
 
     case 'add-guilds': switch(req.method) {
@@ -160,8 +159,7 @@ async function server(req, res) {
             .replace('${channel}', channels_table);
         }
       }
-      res.write(html);
-      res.end();
+      res.end(html);
     } break;
 
     case 'add-channels': switch(req.method) {
@@ -175,16 +173,12 @@ async function server(req, res) {
       }
     } break;
 
-    case 'login-error': {
-      let html = html_files.get('login-error').replace('${error}', current_error);
-      sendHtml(html);
-    } break;
-
     default: {
       res.writeHead(404);
       sendHtmlFile('page-not-found');
     }
-  }
+
+  } } catch(err) { console.error(err); sendError(err); }
 }
 
 main();
