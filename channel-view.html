@@ -16,7 +16,7 @@
 
 <p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
 
-<h2>${guild.name} (${guild.id})</h2>
+<h2>#${channel.name} (${channel.id})</h2>
 
 <table>
   <!-- 
@@ -26,11 +26,11 @@
       <td>${value}</td>
     </tr>
   -->
-  ${guild}
+  ${channel}
 </table><br>
 
-<a href="/add-guilds">Add Guilds</a><br>
-<a href="/guilds">Back to Guilds</a>
+<a href="/add-channels">Add Channels</a><br>
+<a href="/channels">Back to Channels</a>
 
 </body>
 </html>

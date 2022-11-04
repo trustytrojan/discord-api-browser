@@ -2,22 +2,11 @@
 <html>
 
 <style>
-  * {
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  table {
-    border-collapse: collapse;
-  }
   table, th, td {
     border: 1px solid black;
   }
   th, td {
     padding: 2px
-  }
-  .btnlink {
-    background-color: deepskyblue;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
   }
 </style>
 
@@ -27,7 +16,7 @@
 
 <p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
 
-<h2>Saved Guilds</h2>
+<h2>Guilds</h2>
 
 <table>
   <thead>
@@ -51,9 +40,8 @@
     ${guilds}
   </tbody>
 </table><br>
-
-<a href="/add-guilds">Add Guilds</a>
-<a href="/" class=".btnlink"></a>
+<a href="/add-guilds">Add Guilds</a><br>
+<a href="/">Back to Main Menu</a>
 
 </body>
 </html>

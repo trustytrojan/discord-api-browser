@@ -11,8 +11,8 @@ module.exports = {
   async readSave(client) {
     const log = (x) => console.log(`readSave: ${x}`);
     log('Attempting to read save file...');
-    let token, guilds, users;
-    try { ({ token, guilds, users } = require('./save.json')); } 
+    let token, guilds, channels;
+    try { ({ token, guilds, channels } = require('./save.json')); } 
     catch(err) {
       log('No save file found');
       return false;
@@ -28,9 +28,9 @@ module.exports = {
     for(const id of guilds)
       try { await client.guilds.fetch(id); }
       catch(err) { console.error(err); }
-    log('Fetching users...');
-    for(const id of users)
-      try { await client.users.fetch(id); }
+    log('Fetching channels...');
+    for(const id of channels)
+      try { await client.channels.fetch(id); }
       catch(err) { console.error(err); }
     log('Done');
     return true;
@@ -45,7 +45,8 @@ module.exports = {
     const save = {
       token: client.token,
       guilds: Array.from(client.guilds.cache.keys()),
-      users: Array.from(client.users.cache.keys())
+      //users: Array.from(client.users.cache.keys()),
+      channels: Array.from(client.channels.cache.keys())
     };
     writeFileSync(save_filename, JSON.stringify(save, null, '  '));
     log('Done');

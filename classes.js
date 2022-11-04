@@ -40,56 +40,14 @@ class ClientUser extends User {
   }
 }
 
-class UserManager {
-  /** @type {Map<string,User>} */ cache;
-  /** @type {string} */ token;
+class Channel {
+  /** @type {string} */ id;
+  /** @type {string} */ name;
 
-  /**
-   * @param {string} token 
-   */
-  constructor() {
-    this.cache = new Map();
-  }
-
-  checkToken() {
-    if(!this.token)
-      throw "UserManager: I don't have a token!";
-  }
-
-  /**
-   * @param {string} id 
-   * @returns {Promise<User>}
-   */
-  async fetch(id) {
-    this.checkToken();
-    {
-      const stored_user = this.cache.get(id);
-      if(stored_user) return stored_user;
+  constructor(o) {
+    for(const k in this) {
+      this[k] = o[k];
     }
-    if(this.cache.has(id)) return this.cache.get(id);
-    const url = `${base_url}/users/${id}`;
-    const headers = { authorization: this.token };
-    const init = { method: 'GET', headers };
-    const resp = await fetch(url, init);
-    const obj = await resp.json();
-    if(obj.message)
-      throw obj;
-    return this.cache.ensure(id, new User(obj));
-  }
-
-  /**
-   * @returns {Promise<ClientUser>}
-   */
-  async fetch_me() {
-    this.checkToken();
-    const url = `${base_url}/users/@me`;
-    const headers = { authorization: this.token };
-    const init = { method: 'GET', headers };
-    const resp = await fetch(url, init);
-    const obj = await resp.json();
-    if(obj.message)
-      throw obj;
-    return this.cache.ensure(obj.id, new ClientUser(obj));
   }
 }
 
@@ -104,15 +62,98 @@ class Guild {
   }
 }
 
-class GuildManager {
-  /** @type {Map<string,Guild>} */ cache;
-  /** @type {string} */ token;
+class DataManager {
+  /** @type {Client} */ client;
+  /** @type {() => any} */ dataConstructor;
+  /** @type {Map<string,any>} */ cache;
 
   /**
-   * @param {string} token 
+   * @param {Client} client 
+   * @param {() => any} dataConstructor 
    */
-  constructor() {
+  constructor(client, dataConstructor) {
+    this.client = client;
+    this.dataConstructor = dataConstructor;
     this.cache = new Map();
+  }
+
+  /**
+   * @param {string} api_path Should take the form of `/path/id`
+   * @returns {any}
+   */
+  async fetch(api_path) {
+    const url = base_url+api_path;
+    console.log(`Fetching ${this.dataConstructor.name} from ${url}`)
+    const id = api_path.substring(1+api_path.lastIndexOf('/'));
+    {
+      const cached = this.cache.get(id);
+      if(cached) return cached;
+    }
+    const resp = await fetch(url, { headers: { authorization: this.client.token } });
+    const obj = await resp.json();
+    // discord responds with a `message` property to indicate an error
+    if(obj.message) throw obj;
+    this.cache.set(id, new this.dataConstructor(obj));
+    return this.cache.get(id);
+  }
+}
+
+class UserManager extends DataManager {
+  /**
+   * @param {Client} client The client that instantiated this
+   */
+  constructor(client) {
+    super(client, User);
+    /** @type {Map<string,User>} */ this.cache;
+  }
+
+  /**
+   * @param {string} id 
+   * @returns {Promise<User>}
+   */
+  async fetch(id) {
+    return await super.fetch(`/users/${id}`);
+  }
+
+  /**
+   * Should only be used by the Client class for fetching the user associated with its token.
+   * @returns {Promise<ClientUser>}
+   */
+  async fetch_me() {
+    const url = `${base_url}/users/@me`;
+    const resp = await fetch(url, { headers: { authorization: this.client.token } });
+    const obj = await resp.json();
+    if(obj.message) throw obj;
+    this.cache.set(obj.id, new ClientUser(obj));
+    return this.cache.get(obj.id);
+  }
+}
+
+class ChannelManager extends DataManager {
+  /**
+   * @param {Client} client 
+   */
+  constructor(client) {
+    super(client, Channel);
+    /** @type {Map<string,Channel>} */ this.cache;
+  }
+
+  /**
+   * @param {string} id 
+   * @returns {Promise<Channel>}
+   */
+  async fetch(id) {
+    return await super.fetch(`/channels/${id}`);
+  }
+}
+
+class GuildManager extends DataManager {
+  /**
+   * @param {Client} client 
+   */
+  constructor(client) {
+    super(client, Guild);
+    /** @type {Map<string,Guild>} */ this.cache;
   }
 
   /**
@@ -120,18 +161,7 @@ class GuildManager {
    * @returns {Promise<Guild>}
    */
   async fetch(id) {
-    {
-      const stored_guild = this.cache.get(id);
-      if(stored_guild) return stored_guild;
-    }
-    const url = `${base_url}/guilds/${id}`;
-    const headers = { authorization: this.token };
-    const init = { method: 'GET', headers };
-    const resp = await fetch(url, init);
-    const obj = await resp.json();
-    if(obj.message)
-      throw obj;
-    return this.cache.ensure(id, new Guild(obj));
+    return await super.fetch(`/guilds/${id}`);
   }
 }
 
@@ -139,11 +169,13 @@ class Client {
   /** @type {string} */ token;
   /** @type {ClientUser} */ user;
   /** @type {UserManager} */ users;
+  /** @type {ChannelManager} */ channels;
   /** @type {GuildManager} */ guilds;
 
   constructor() {
-    this.users = new UserManager();
-    this.guilds = new GuildManager();
+    this.users = new UserManager(this);
+    this.channels = new ChannelManager(this);
+    this.guilds = new GuildManager(this);
   }
 
   /**
@@ -151,8 +183,6 @@ class Client {
    */
   async login(token) {
     this.token = token;
-    this.users.token = token;
-    this.guilds.token = token;
     this.user = await this.users.fetch_me();
   }
 }

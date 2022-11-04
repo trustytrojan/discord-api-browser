@@ -31,6 +31,8 @@ process.on('SIGTERM', kill);
 async function main() {
   if(await readSave(client))
     insertClientInfoIntoHtml(html_files, client);
+  else
+    process.exit(1);
   createServer(server).listen(port);
   console.log(`Listening on port ${port}`);
 }
@@ -73,8 +75,7 @@ async function server(req, res) {
   path_split.shift();
   switch(path_split[0]) {
 
-    // add logout button to every page
-
+    // this is the "/" path
     case '': sendHtmlFile('main-menu'); break;
 
     // multiple tokens? worry about later
@@ -98,23 +99,25 @@ async function server(req, res) {
       let html;
       switch(path_split[1]) {
         case undefined: {
-          html = html_files.get('guilds');
+          let replace_with = '';
           if(client.guilds.cache.size === 0)
-            html = html.replace('${guilds}', 'No Saved Guilds');
-          else {
-            let g_str = '';
-            for(const { name, id } of client.guilds.cache.values())
-              g_str += `<tr><td><a href="/guilds/${id}">${id}</a></td><td><a href="/guilds/${id}">${name}</a></td></tr>`;
-            html = html.replace('${guilds}', g_str);
-          }
+            replace_with = 'No Saved guilds';
+          else
+            for(const { name, id } of client.guilds.cache.values()) {
+              const td = (x) => `<td><a href="/guilds/${id}">${x}</a></td>`;
+              replace_with += `<tr>${td(id)}${td(name)}</tr>`;
+            }
+          html = html_files.get('guilds').replace('${guilds}', replace_with);
         } break;
         default: {
           const guild = await client.guilds.fetch(path_split[1]);
-          html = html_files.get('guild-view');
-          let g_str = '';
+          let guilds_table = '';
           for(const k in guild)
-            g_str += `<tr><th>${k}</th><td>${guild[k]}</td></tr>`;
-          html = html.replace('${guild}', g_str);
+            guilds_table += `<tr><th>${k}</th><td>${guild[k]}</td></tr>`;
+          html = html_files.get('guild-view')
+            .replace('${guild.id}', guild.id)
+            .replace('${guild.name}', guild.name)
+            .replace('${guild}', guilds_table);
         }
       }
       res.write(html);
@@ -124,16 +127,52 @@ async function server(req, res) {
     case 'add-guilds': switch(req.method) {
       case 'GET': sendHtmlFile(); break;
       case 'POST': {
-        const guild_ids = (await get_post_data()).eraseAll(['guilds=']).split('\r\n');
-        guild_ids.remove_empty_strings(); // defined in prototypes.js
-        for(const id of guild_ids)
+        const ids = (await get_post_data()).eraseAll(['guilds=']).split('\r\n');
+        ids.remove_empty_strings(); // defined in prototypes.js
+        for(const id of ids)
           await client.guilds.fetch(id);
         redirect('/guilds');
       }
     } break;
 
-    case 'users': {
+    case 'channels': {
+      let html;
+      switch(path_split[1]) {
+        case undefined: {
+          let replace_with = '';
+          if(client.guilds.cache.size === 0)
+            replace_with = 'No Saved channels';
+          else
+            for(const { name, id } of client.channels.cache.values()) {
+              const td = (x) => `<td><a href="/channels/${id}">${x}</a></td>`;
+              replace_with += `<tr>${td(id)}${td(name)}</tr>`;
+            }
+          html = html_files.get('channels').replace('${channels}', replace_with);
+        } break;
+        default: {
+          const channel = await client.channels.fetch(path_split[1]);
+          let channels_table = '';
+          for(const k in channel)
+            channels_table += `<tr><th>${k}</th><td>${channel[k]}</td></tr>`;
+          html = html_files.get('channel-view')
+            .replace('${channel.id}', channel.id)
+            .replace('${channel.name}', channel.name)
+            .replace('${channel}', channels_table);
+        }
+      }
+      res.write(html);
+      res.end();
+    } break;
 
+    case 'add-channels': switch(req.method) {
+      case 'GET': sendHtmlFile(); break;
+      case 'POST': {
+        const ids = (await get_post_data()).eraseAll(['channels=']).split('\r\n');
+        ids.remove_empty_strings(); // defined in prototypes.js
+        for(const id of ids)
+          await client.channels.fetch(id);
+        redirect('/channels');
+      }
     } break;
 
     case 'login-error': {

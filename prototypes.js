@@ -1,20 +1,4 @@
-/**
- * Ensures that the specified key exists.
- * 
- * If not, a new key-value pair will be generated with the specified key and default value.
- * 
- * The key's value will be returned.
- * @param {any} key 
- * @param {any} defaultValue 
- * @returns {any}
- */
-Map.prototype.ensure = function(key, defaultValue) {
-  if(!this.has(key)) {
-    this.set(key, defaultValue);
-  }
-  return this.get(key);
-}
-
+// self-explanatory
 Array.prototype.remove_empty_strings = function() {
   for(let i = 0; i < this.length; ++i) {
     if(typeof this[i] !== 'string') continue;
@@ -35,4 +19,17 @@ String.prototype.eraseAll = function(arr) {
     str = str.replaceAll(s, '');
   }
   return str;
+}
+
+/**
+ * Return a new Map with key-value pairs that satisfy `filter_func`.
+ * @param {(v) => boolean} filter_func 
+ */
+Map.prototype.filter = function(filter_func) {
+  const filtered = new Map();
+  for(const [k,v] of this) {
+    if(filter_func(v))
+      filtered.set(k, v);
+  }
+  return filtered;
 }
