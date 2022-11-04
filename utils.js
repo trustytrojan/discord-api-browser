@@ -60,7 +60,7 @@ module.exports = {
     log('Reading all HTML files into memory...');
     for(const file of readdirSync('./html')) {
       if(!file.endsWith('.html')) continue;
-      html_files.set(file.replaceAll('.html', ''), readFileSync(file).toString());
+      html_files.set(file.replaceAll('.html', ''), readFileSync(`./html/${file}`).toString());
     }
     log('Done');
   },

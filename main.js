@@ -138,9 +138,10 @@ async function server(req, res) {
       let html;
       switch(path_split[1]) {
         case undefined: {
+          console.log(client.channels.cache);
           let replace_with = '';
-          if(client.guilds.cache.size === 0)
-            replace_with = 'No Saved channels';
+          if(client.channels.cache.size === 0)
+            replace_with = 'No Saved Channels';
           else
             for(const { name, id } of client.channels.cache.values()) {
               const td = (x) => `<td><a href="/channels/${id}">${x}</a></td>`;

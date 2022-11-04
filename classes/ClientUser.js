@@ -1,4 +1,6 @@
-module.exports = class ClientUser extends require('./User') {
+const User = require('./User');
+
+module.exports = class ClientUser extends User {
   /** @type {string} */ bio;
   /** @type {number} */ purchased_flags;
   /** @type {boolean} */ mfa_enabled;
@@ -11,5 +13,7 @@ module.exports = class ClientUser extends require('./User') {
 
   constructor(o) {
     super(o);
+    for(const k in this)
+      this[k] = o[k];
   }
 }

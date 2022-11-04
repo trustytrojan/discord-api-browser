@@ -1,5 +1,6 @@
-module.exports = class User extends require('./Base') {
-  /** @type {string} */ id; 
+const Base = require('./Base');
+
+module.exports = class User extends Base {
   /** @type {string} */ username;
   /** @type {string} */ avatar;
   avatar_decoration;

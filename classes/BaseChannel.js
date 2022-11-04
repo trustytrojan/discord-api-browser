@@ -1,7 +1,7 @@
 const Base = require('./Base');
 
-module.exports = class Guild extends Base {
-  /** @type {string} */ name;
+module.exports = class BaseChannel extends Base {
+  /** @type {number} */ type;
 
   constructor(o) {
     super(o);
