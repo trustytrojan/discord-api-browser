@@ -10,4 +10,4 @@ module.exports = class TextBasedChannel extends BaseChannel {
       this[k] = o[k];
     this.last_pin_timestamp = new Date(this.last_pin_timestamp);
   }
-} 
+};

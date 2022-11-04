@@ -16,7 +16,8 @@ module.exports = class UserManager extends DataManager {
    * @returns {Promise<User>}
    */
   async fetch(id) {
-    return await super.fetch(`/users/${id}`);
+    const data = await super.fetch(`/users/${id}`);
+    return this.cache.set(id, new User(data)).get(id);
   }
 
   /**
@@ -24,11 +25,7 @@ module.exports = class UserManager extends DataManager {
    * @returns {Promise<ClientUser>}
    */
   async fetch_me() {
-    const url = `${DataManager.base_url}/users/@me`;
-    const resp = await fetch(url, { headers: { authorization: this.client.token } });
-    const obj = await resp.json();
-    if(obj.message) throw obj;
-    this.cache.set(obj.id, new ClientUser(obj));
-    return this.cache.get(obj.id);
+    const data = await super.fetch('/users/@me');
+    return this.cache.set(data.id, new ClientUser(data)).get(data.id);
   }
-}
+};

@@ -5,4 +5,4 @@ module.exports = {
   GroupDM: 3,
   GuildCategory: 4,
   GuildAnnouncement: 5
-}
+};

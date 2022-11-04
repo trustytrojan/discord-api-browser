@@ -1,4 +1,4 @@
-const TextBasedChannel = require("./TextBasedChannel");
+const TextBasedChannel = require('./TextBasedChannel');
 
 module.exports = class DMChannel extends TextBasedChannel {
   /** @type {User[]} */ recipients;
@@ -8,4 +8,4 @@ module.exports = class DMChannel extends TextBasedChannel {
     for(const k in this)
       this[k] = o[k];
   }
-}
+};

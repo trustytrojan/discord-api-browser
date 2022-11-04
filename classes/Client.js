@@ -23,4 +23,4 @@ module.exports = class Client {
     this.token = token;
     this.user = await this.users.fetch_me();
   }
-}
+};

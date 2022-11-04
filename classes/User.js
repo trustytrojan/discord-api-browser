@@ -19,4 +19,4 @@ module.exports = class User extends Base {
     this.tag = `${this.username}#${this.discriminator}`;
     //this.avatar = 
   }
-}
+};

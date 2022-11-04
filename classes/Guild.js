@@ -8,4 +8,4 @@ module.exports = class Guild extends Base {
     for(const k in this)
       this[k] = o[k];
   }
-}
+};

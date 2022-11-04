@@ -10,4 +10,4 @@ module.exports = class GroupDMChannel extends DMChannel {
     for(const k in this)
       this[k] = o[k];
   }
-}
+};

@@ -14,6 +14,7 @@ module.exports = class ClientUser extends User {
   constructor(o) {
     super(o);
     for(const k in this)
-      this[k] = o[k];
+      if(o[k] !== undefined)
+        this[k] = o[k];
   }
-}
+};

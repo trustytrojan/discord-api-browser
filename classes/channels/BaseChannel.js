@@ -1,4 +1,4 @@
-const Base = require('./Base');
+const Base = require('../Base');
 
 module.exports = class BaseChannel extends Base {
   /** @type {number} */ type;
@@ -8,4 +8,4 @@ module.exports = class BaseChannel extends Base {
     for(const k in this)
       this[k] = o[k];
   }
-}
+};
