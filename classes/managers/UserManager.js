@@ -1,6 +1,6 @@
 const DataManager = require('./DataManager');
-const User = require('./User');
-const ClientUser = require('./ClientUser');
+const User = require('../User');
+const ClientUser = require('../ClientUser');
 
 module.exports = class UserManager extends DataManager {
   /**

@@ -1,7 +1,7 @@
-const UserManager = require('./UserManager');
+const UserManager = require('./managers/UserManager');
 const ClientUser = require('./ClientUser');
-const ChannelManager = require('./ChannelManager');
-const GuildManager = require('./GuildManager');
+const ChannelManager = require('./managers/ChannelManager');
+const GuildManager = require('./managers/GuildManager');
 
 module.exports = class Client {
   /** @type {string} */ token;

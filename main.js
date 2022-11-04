@@ -177,7 +177,7 @@ async function server(req, res) {
     default: {
       res.writeHead(404);
       sendHtmlFile('page-not-found');
-    }
+    } break;
 
   } } catch(err) { console.error(err); sendError(err); }
 }

@@ -1,4 +1,4 @@
-const Guild = require('./Guild');
+const Guild = require('../Guild');
 
 module.exports = class GuildManager extends require('./DataManager') {
   /**
