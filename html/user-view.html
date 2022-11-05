@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+  table, th, td {
+    border: 1px solid black;
+  }
+  th, td {
+    padding: 2px
+  }
+</style>
+
+<body>
+
+<h1>Discord API Browser</h1>
+
+<p>Logged in as <a href="/users/${client.user.id}">${client.user.tag}</a></p>
+
+<h2>${user.tag} (${user.id})</h2>
+
+<table>
+  <!-- 
+    Template for JS: 
+    <tr>
+      <th>key</th>
+      <td>${value}</td>
+    </tr>
+  -->
+  ${table_rows}
+</table><br>
+
+<a href="/add-users">Add Users</a><br>
+<a href="/users">Back to Users</a>
+
+</body>
+</html>

@@ -11,10 +11,10 @@ module.exports = class ClientUser extends User {
   /** @type {string} */ locale;
   /** @type {boolean} */ nsfw_allowed;
 
-  constructor(o) {
-    super(o);
+  constructor(data, client) {
+    super(data, client);
     for(const k in this)
-      if(o[k] !== undefined)
-        this[k] = o[k];
+      if(data[k] !== undefined)
+        this[k] = data[k];
   }
 };

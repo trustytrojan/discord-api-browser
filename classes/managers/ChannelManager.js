@@ -1,7 +1,18 @@
-const { GuildText, DM } = require('../channels/channel-types');
+const { GuildText, DM, GuildVoice, GroupDM } = require('../channels/channel-types');
 const BaseChannel = require('../channels/BaseChannel');
 const DataManager = require('./DataManager');
-const DMChannel = require('../channels/DMChannel');
+
+function create_correct_channel(data, client) {
+  const DMChannel = require('../channels/DMChannel');
+  const GroupDMChannel = require('../channels/GroupDMChannel');
+  switch(data.type) {
+    case GuildText: return;
+    case DM: return new DMChannel(data, client);
+    case GuildVoice: return;
+    case GroupDM: return new GroupDMChannel(data, client);
+    default: return new BaseChannel(data, client);
+  }
+}
 
 module.exports = class ChannelManager extends DataManager {
   /**
@@ -13,16 +24,17 @@ module.exports = class ChannelManager extends DataManager {
   }
 
   /**
+   * Fetches and, if not already cached, caches the desired Channel object from Discord.
    * @param {string} id 
    * @returns {Promise<BaseChannel>}
    */
   async fetch(id) {
-    const data = await super.fetch(`/channels/${id}`);
-    let channel;
-    switch(data.type) {
-      case GuildText: break;
-      case DM: channel = new DMChannel(data); break;
+    {
+      const cached = this.cache.get(id);
+      if(cached) return cached;
     }
+    const data = await super.fetch(`/channels/${id}`);
+    const channel = create_correct_channel(data, this.client);
     return this.cache.set(id, channel).get(id);
   }
 };

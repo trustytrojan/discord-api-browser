@@ -3,11 +3,23 @@ const DMChannel = require('./DMChannel');
 module.exports = class GroupDMChannel extends DMChannel {
   /** @type {string} */ name;
   /** @type {string} */ owner_id;
+  /** @type {User} */ owner;
   /** @type {string} */ icon;
+  /** @type {Map<string,User>} */ recipients;
 
-  constructor(o) {
-    super(o);
+  constructor(data, client) {
+    super(data, client);
     for(const k in this)
-      this[k] = o[k];
+      if(data[k] !== undefined)
+        this[k] = data[k];
+    this.fetchOwner();
+  }
+
+  async fetchOwner() {
+    return this.owner = await this.client.users.fetch(this.owner_id);
+  }
+
+  async fetchRecipients() {
+    this.rec
   }
 };

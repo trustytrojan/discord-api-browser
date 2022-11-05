@@ -1,7 +1,9 @@
 const { once } = require('events');
 const { ServerResponse, IncomingMessage, createServer } = require('http');
-const { readSave, insertClientInfoIntoHtml, readHtmlFiles, writeData } = require('./utils');
+const { readSave, insertClientInfoIntoHtml, readHtmlFiles, writeSave } = require('./utils');
 const Client = require('./classes/Client');
+const DMChannel = require('./classes/channels/DMChannel');
+const GroupDMChannel = require('./classes/channels/GroupDMChannel');
 require('./ignore-ExperimentalWarning');
 require('./prototypes');
 
@@ -19,7 +21,7 @@ readHtmlFiles(html_files);
 function kill() {
   const log = (x) => console.log(`kill: ${x}`);
   log('Process is being killed');
-  writeData(client);
+  writeSave(client);
   log('Now exiting');
   process.exit();
 }
@@ -53,7 +55,7 @@ async function server(req, res) {
   const redirect = (new_path) => res.writeHead(302, { location: `${origin}${new_path}` }).end();
 
   /** @param {string} filename */
-  const sendHtmlFile = (filename) => res.end(html_files.get(filename ?? pathname.replace('/', '')));
+  const sendHtmlFile = (filename) => res.end(html_files.get(filename));
 
   /** @param {Error} err */
   const sendError = (err) => res.end(html_files.get('error').replace('${error}', JSON.stringify(err, null, '  ')));
@@ -97,17 +99,35 @@ async function server(req, res) {
 
     case 'guilds': {
       let html;
+      if(client.guilds.busy) {
+        res.end(html_files.get('busy-fetching').replace('${something}', 'guilds'));
+        break;
+      }
       switch(path_split[1]) {
         case undefined: {
           let replace_with = '';
           if(client.guilds.cache.size === 0)
-            replace_with = 'No Saved guilds';
+            replace_with = '<td colspan="2" style="color:gray;padding:5px">guild cache is empty</td>';
           else
             for(const { name, id } of client.guilds.cache.values()) {
               const td = (x) => `<td><a href="/guilds/${id}">${x}</a></td>`;
               replace_with += `<tr>${td(id)}${td(name)}</tr>`;
             }
           html = html_files.get('guilds').replace('${guilds}', replace_with);
+        } break;
+        case 'add': switch(req.method) {
+          case 'GET': sendHtmlFile('guilds-add'); break;
+          case 'POST': {
+            const ids = (await get_post_data()).eraseAll(['guilds=']).split('\r\n');
+            ids.remove_empty_strings(); // defined in prototypes.js
+            for(const id of ids)
+              await client.guilds.fetch(id);
+            redirect('/guilds');
+          }
+        } break;
+        case 'refresh': {
+          await client.guilds.fetchAll();
+          redirect('/guilds');
         } break;
         default: {
           const guild = await client.guilds.fetch(path_split[1]);
@@ -123,29 +143,27 @@ async function server(req, res) {
       res.end(html);
     } break;
 
-    case 'add-guilds': switch(req.method) {
-      case 'GET': sendHtmlFile(); break;
-      case 'POST': {
-        const ids = (await get_post_data()).eraseAll(['guilds=']).split('\r\n');
-        ids.remove_empty_strings(); // defined in prototypes.js
-        for(const id of ids)
-          await client.guilds.fetch(id);
-        redirect('/guilds');
-      }
-    } break;
-
     case 'channels': {
       let html;
+      if(client.guilds.busy) {
+        res.end(html_files.get('busy-fetching').replace('${something}', 'channels'));
+        break;
+      }
       switch(path_split[1]) {
         case undefined: {
-          console.log(client.channels.cache);
           let replace_with = '';
           if(client.channels.cache.size === 0)
             replace_with = 'No Saved Channels';
           else
-            for(const { name, id } of client.channels.cache.values()) {
+            for(const channel of client.channels.cache.values()) {
               const td = (x) => `<td><a href="/channels/${id}">${x}</a></td>`;
-              replace_with += `<tr>${td(id)}${td(name)}</tr>`;
+              let str;
+              if(channel instanceof DMChannel) {
+                const { id, recipients: [recipient] } = channel;
+                replace_with += `<tr>${td(id)}${td(`DM with ${recipient.tag}`)}</tr>`
+              } else if(channel instanceof GroupDMChannel) {
+                const { id, name, recipients } = channel;
+              }
             }
           html = html_files.get('channels').replace('${channels}', replace_with);
         } break;
@@ -172,6 +190,35 @@ async function server(req, res) {
           await client.channels.fetch(id);
         redirect('/channels');
       }
+    } break;
+
+    case 'users': {
+      let html;
+      if(client.guilds.busy) {
+        res.end(html_files.get('busy-fetching').replace('${something}', 'users'));
+        break;
+      }
+      switch(path_split[1]) {
+        case undefined: {
+          let replace_with = '';
+          if(client.users.cache.size === 0)
+            replace_with = 'No Saved Users';
+          else
+            for(const { id, tag } of client.users.cache.values()) {
+              const td = (x) => `<td><a href="/users/${id}">${x}</a></td>`;
+              replace_with += `<tr>${td(id)}${td(tag)}</tr>`;
+            }
+          html = html_files.get('users').replace('${users}', replace_with);
+        } break;
+        default: {
+          const user = await client.users.fetch(path_split[1]);
+          html = html_files.get('user-view')
+            .replace('${user.tag}', user.tag)
+            .replace('${user.id}', user.id)
+            .replace('${table_rows}', user.htmlTableRows());
+        }
+      }
+      res.end(html);
     } break;
 
     default: {

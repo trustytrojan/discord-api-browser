@@ -3,9 +3,10 @@ const Base = require('../Base');
 module.exports = class BaseChannel extends Base {
   /** @type {number} */ type;
 
-  constructor(o) {
-    super(o);
+  constructor(data, client) {
+    super(data, client);
     for(const k in this)
-      this[k] = o[k];
+      if(data[k] !== undefined)
+        this[k] = data[k];
   }
 };

@@ -4,10 +4,11 @@ module.exports = class TextBasedChannel extends BaseChannel {
   /** @type {string} */ last_message_id;
   /** @type {Date} */ last_pin_timestamp;
 
-  constructor(o) {
-    super(o);
+  constructor(data, client) {
+    super(data, client);
     for(const k in this)
-      this[k] = o[k];
+      if(data[k] !== undefined)
+        this[k] = data[k];
     this.last_pin_timestamp = new Date(this.last_pin_timestamp);
   }
 };

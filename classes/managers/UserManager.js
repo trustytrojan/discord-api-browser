@@ -12,10 +12,15 @@ module.exports = class UserManager extends DataManager {
   }
 
   /**
+   * Fetches and, if not already cached, caches the desired User object from Discord.
    * @param {string} id 
    * @returns {Promise<User>}
    */
   async fetch(id) {
+    {
+      const cached = this.cache.get(id);
+      if(cached) return cached;
+    }
     const data = await super.fetch(`/users/${id}`);
     return this.cache.set(id, new User(data)).get(id);
   }

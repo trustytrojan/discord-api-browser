@@ -3,9 +3,11 @@ const TextBasedChannel = require('./TextBasedChannel');
 module.exports = class DMChannel extends TextBasedChannel {
   /** @type {User[]} */ recipients;
 
-  constructor(o) {
-    super(o);
+  constructor(data, client) {
+    super(data, client);
     for(const k in this)
-      this[k] = o[k];
+      if(data[k] !== undefined)
+        this[k] = data[k];
+    this.recipient = data.recipients[0].id;
   }
 };

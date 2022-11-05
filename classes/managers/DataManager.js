@@ -1,5 +1,5 @@
 module.exports = class DataManager {
-  static base_url = 'https://discord.com/api/v9';
+  static base_url = 'https://discord.com/api/v10';
 
   /** @type {Client} */ client;
   /** @type {Map<string,any>} */ cache;
@@ -12,6 +12,11 @@ module.exports = class DataManager {
     this.cache = new Map();
   }
 
+  async checkCached(id) {
+    const cached = this.cache.get(id);
+    if(cached) return cached;
+  }
+
   /**
    * Returns the raw JSON object received by the Discord API at the desired path.
    * @param {string} api_path Should take the form of `/path/id`
@@ -20,13 +25,6 @@ module.exports = class DataManager {
   async fetch(api_path) {
     const url = `${DataManager.base_url}${api_path}`;
     console.log(`Fetching ${url}`);
-    
-    const id = api_path.substring(1+api_path.lastIndexOf('/'));
-
-    {
-      const cached = this.cache.get(id);
-      if(cached) return cached;
-    }
 
     const resp = await fetch(url, { headers: { authorization: this.client.token } });
     const obj = await resp.json();
