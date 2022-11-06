@@ -12,11 +12,6 @@ module.exports = class DataManager {
     this.cache = new Map();
   }
 
-  async checkCached(id) {
-    const cached = this.cache.get(id);
-    if(cached) return cached;
-  }
-
   /**
    * Returns the raw JSON object received by the Discord API at the desired path.
    * @param {string} api_path Should take the form of `/path/id`

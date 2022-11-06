@@ -37,4 +37,16 @@ module.exports = class ChannelManager extends DataManager {
     const channel = create_correct_channel(data, this.client);
     return this.cache.set(id, channel).get(id);
   }
+
+  /**
+   * Fetches and caches all DM channels that the client user has open.
+   */
+  async fetchDMs() {
+    this.busy = true;
+    const data = await super.fetch(`/users/@me/channels`);
+    for(const { id } of data) {
+      await this.fetch(id);
+    }
+    this.busy = false;
+  }
 };

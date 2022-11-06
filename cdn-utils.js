@@ -1,7 +1,5 @@
 const base_url = 'https://cdn.discordapp.com';
-
 const allowed_sizes = [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096];
-const allowed_sticker_extensions = ['png', 'json'];
 const allowed_extensions = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
 
 /**
@@ -22,9 +20,9 @@ const allowed_extensions = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
  * @param {MakeURLOptions} 
  * @returns 
  */
-function makeURL(route, { size, extension = 'webp', allowedExtensions = allowed_extensions } = {}) {
-  if(!allowedExtensions.includes(extension)) {
-    throw new RangeError(`Invalid extension provided: ${extension}\nMust be one of: ${allowedExtensions.join(', ')}`);
+function makeURL(route, { size, extension = 'gif' }) {
+  if(!allowed_extensions.includes(extension)) {
+    throw new RangeError(`Invalid extension provided: ${extension}\nMust be one of: ${allowed_extensions.join(', ')}`);
   }
 
   if(size && !allowed_sizes.includes(size)) {
@@ -40,24 +38,34 @@ function makeURL(route, { size, extension = 'webp', allowedExtensions = allowed_
   return url.toString();
 }
 
+function dynamicMakeURL(route, hash, { forceStatic = false, ...options }) {
+  return this.makeURL(route, !forceStatic && hash.startsWith('a_') ? { ...options, extension: 'gif' } : options);
+}
+
 /**
  * @param {string} id 
  * @param {string} hash 
- * @param {ImageURLOptions} options 
+ * @param {number} size 
  * @returns {string}
  */
-const avatar = (id, hash, options) => makeURL(`/avatars/${id}/${hash}`, options);
+const avatar = (id, hash, size) => makeURL(`/avatars/${id}/${hash}`, { size });
 
 /**
- * 
  * @param {string} id 
- * @param {ImageURLOptions} 
- * @returns 
+ * @param {string} hash 
+ * @param {number} size 
+ * @returns {string}
  */
-const sticker = (id, { extension }) => makeURL(`/stickers/${id}`, { extension: (extension ?? 'png'), allowedExtensions: allowed_sticker_extensions });
+const icon = (id, hash, size) => makeURL(`/icons/${id}/${hash}`, { size });
 
+/**
+ * @param {string} id 
+ * @returns {string}
+ */
+const sticker = (id) => makeURL(`/stickers/${id}`, { extension: 'png' });
 
 module.exports = {
   get avatar() { return avatar; },
-  get sticker() { return sticker; }  
+  get sticker() { return sticker; },
+  get icon() { return icon; }
 };

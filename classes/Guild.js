@@ -1,4 +1,6 @@
 const Base = require('./Base');
+const { td, th, tr, img } = require('../html/html-utils');
+const { icon } = require('../cdn-utils');
 
 module.exports = class Guild extends Base {
   /** @type {string} */ name;
@@ -44,5 +46,22 @@ module.exports = class Guild extends Base {
     for(const k in this)
       if(data[k] !== undefined)
         this[k] = data[k];
+  }
+
+  /**
+   * @param {number} size
+   * @returns {string}
+   */
+  iconURL(size) {
+    return icon(this.id, this.hash, size);
+  }
+
+  htmlTableRows() {
+    const rows = [
+      tr(th('id'), td(this.id)),
+      tr(th('name'), td(this.name)),
+      tr(th('icon'), td(img(this.iconURL(4096))))
+    ];
+    return rows.join('');
   }
 };

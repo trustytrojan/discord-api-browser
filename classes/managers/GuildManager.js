@@ -4,7 +4,6 @@ module.exports = class GuildManager extends require('./DataManager') {
   constructor(client) {
     super(client);
     /** @type {Map<string,Guild>} */ this.cache;
-    this.busy = false;
   }
 
   /**
