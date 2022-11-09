@@ -92,19 +92,48 @@ module.exports = function(html_files, client) {
             redirect('/guilds');
           } break;
           default: {
-            const guild = await client.guilds.fetch(route[1]);
+            const { id, name, htmlTableRows } = await client.guilds.fetch(route[1]);
             html = html_files.get('guild-view')
               .replace('${guild.name}', guild.name)
               .replace('${guild.id}', guild.id)
-              .replace('${table_rows}', guild.htmlTableRows());
+              .replace('${guild}', guild.htmlTableRows);
           }
         }
         res.end(html);
       } break;
   
-      // case 'channels': {
-        
-      // } break;
+      case 'channels': {
+        let html;
+        if(client.guilds.busy) {
+          res.end(html_files.get('busy-fetching').replace('${something}', 'channels'));
+          break;
+        }
+        switch(route[1]) {
+          case undefined: {
+            let replace_with = '';
+            if(client.channels.cache.size === 0)
+              replace_with = '<td colspan="2" style="color:gray;padding:5px">channel cache is empty</td>';
+            else
+              for(const { name, id } of client.channels.cache.values()) {
+                const link = `/channels/${id}`;
+                replace_with += tr(td(a(link, id)), td(a(link, name)));
+              }
+            html = html_files.get('channels').replace('${channels}', replace_with);
+          } break;
+          case 'fetch': {
+            await client.channels.fetchDMs();
+            redirect('/channels');
+          } break;
+          default: {
+            const { id, name, htmlTableRows } = await client.channels.fetch(route[1]);
+            html = html_files.get('channel-view')
+              .replace('${channel.name}', name)
+              .replace('${channel.id}', id)
+              .replace('${channel}', htmlTableRows);
+          }
+        }
+        res.end(html);
+      } break;
   
       case 'users': {
         let html;
@@ -124,12 +153,16 @@ module.exports = function(html_files, client) {
               }
             html = html_files.get('users').replace('${users}', replace_with);
           } break;
+          case 'fetch-friends': {
+            await client.users.fetch_friends();
+            redirect('/users');
+          } break;
           default: {
-            const user = await client.users.fetch(route[1]);
+            const { id, tag, htmlTableRows } = await client.users.fetch(route[1]);
             html = html_files.get('user-view')
-              .replace('${user.tag}', user.tag)
-              .replace('${user.id}', user.id)
-              .replace('${table_rows}', user.htmlTableRows());
+              .replace('${user.tag}', tag)
+              .replace('${user.id}', id)
+              .replace('${table_rows}', htmlTableRows);
           }
         }
         res.end(html);

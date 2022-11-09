@@ -49,19 +49,18 @@ module.exports = class Guild extends Base {
   }
 
   /**
-   * @param {number} size
+   * @param {import('../cdn-utils').ImageURLOptions} options
    * @returns {string}
    */
-  iconURL(size) {
-    return icon(this.id, this.hash, size);
+  iconURL(options) {
+    return icon(this.id, this.hash, options);
   }
 
-  htmlTableRows() {
-    const rows = [
-      tr(th('id'), td(this.id)),
+  get htmlTableRows() {
+    return [
+      super.htmlTableRows,
       tr(th('name'), td(this.name)),
-      tr(th('icon'), td(img(this.iconURL(4096))))
-    ];
-    return rows.join('');
+      tr(th('icon'), td(img(this.iconURL({ size: 4096 }))))
+    ].join('');
   }
 };

@@ -1,6 +1,5 @@
 const Base = require('./Base');
-const { avatar } = require('../cdn-utils');
-const { th, td, tr, img } = require('../html/html-utils');
+const cdn = require('../cdn-utils');
 
 module.exports = class User extends Base {
   /** @type {string} */ username;
@@ -27,20 +26,33 @@ module.exports = class User extends Base {
   }
 
   /**
-   * @param {number} size
+   * @param {cdn.ImageURLOptions} options
    * @returns {string}
    */
-  avatarURL(size) {
-    return avatar(this.id, this.avatar, size);
+  avatarURL(options) {
+    return cdn.avatar(this.id, this.avatar, options);
   }
 
-  htmlTableRows() {
-    const rows = [
-      tr(th('id'), td(this.id)),
+  get htmlTableRows() {
+    const { th, td, tr, a, img } = require('../html/html-utils');
+    let links;
+    {
+      const avatars = [];
+      for(const size of cdn.allowed_sizes) {
+        const url = this.avatarURL({ size });
+        avatars.push(a(url, size));
+      }
+      links = avatars.join(' ');
+      const url = this.avatarURL({ size: 256 });
+      links += '<br>';
+      links += a(url, img(url));
+    }
+
+    return [
+      super.htmlTableRows,
       tr(th('username'), td(this.username)),
       tr(th('discriminator'), td(this.discriminator)),
-      tr(th('avatar'), td(img(this.avatarURL(4096)))),
-    ]
-    return rows.join('');
+      tr(th('avatar'), td(links)),
+    ].join('');
   }
 };

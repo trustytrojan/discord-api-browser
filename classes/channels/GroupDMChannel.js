@@ -1,6 +1,6 @@
-const DMChannel = require('./DMChannel');
+const TextBasedChannel = require('./TextBasedChannel');
 
-module.exports = class GroupDMChannel extends DMChannel {
+module.exports = class GroupDMChannel extends TextBasedChannel {
   /** @type {string} */ name;
   /** @type {string} */ owner_id;
   /** @type {User} */ owner;

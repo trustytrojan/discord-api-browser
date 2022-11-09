@@ -33,4 +33,12 @@ module.exports = class UserManager extends DataManager {
     const data = await super.fetch('/users/@me');
     return this.cache.set(data.id, new ClientUser(data)).get(data.id);
   }
+
+  async fetch_friends() {
+    this.busy = true;
+    const data = await super.fetch(`/users/@me/relationships`);
+    for(const { id } of data)
+      await this.fetch(id);
+    this.busy = false;
+  }
 };

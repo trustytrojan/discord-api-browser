@@ -1,6 +1,6 @@
-const base_url = 'https://cdn.discordapp.com';
-const allowed_sizes = [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096];
-const allowed_extensions = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
+const base_url = Object.freeze('https://cdn.discordapp.com');
+const allowed_sizes = Object.freeze([16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096]);
+const allowed_extensions = Object.freeze(['webp', 'png', 'jpg', 'jpeg', 'gif']);
 
 /**
  * @typedef {object} ImageURLOptions
@@ -9,18 +9,11 @@ const allowed_extensions = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
  */
 
 /**
- * @typedef {object} MakeURLOptions
- * @prop {number} size
- * @prop {string} extension
- * @prop {string[]} allowedExtensions
- */
-
-/**
  * @param {string} route 
- * @param {MakeURLOptions} 
+ * @param {ImageURLOptions} 
  * @returns 
  */
-function makeURL(route, { size, extension = 'gif' }) {
+function makeURL(route, { size, extension = 'webp' } = {}) {
   if(!allowed_extensions.includes(extension)) {
     throw new RangeError(`Invalid extension provided: ${extension}\nMust be one of: ${allowed_extensions.join(', ')}`);
   }
@@ -38,25 +31,31 @@ function makeURL(route, { size, extension = 'gif' }) {
   return url.toString();
 }
 
-function dynamicMakeURL(route, hash, { forceStatic = false, ...options }) {
-  return this.makeURL(route, !forceStatic && hash.startsWith('a_') ? { ...options, extension: 'gif' } : options);
-}
+/**
+ * @param {string} route 
+ * @param {string} hash 
+ * @param {ImageURLOptions} options 
+ * @returns 
+ */
+const dynamicMakeURL = (route, hash, options) => makeURL(route, hash.startsWith('a_') ? { ...options, extension: 'gif' } : options);
 
 /**
+ * For user avatars
  * @param {string} id 
  * @param {string} hash 
- * @param {number} size 
+ * @param {ImageURLOptions} options 
  * @returns {string}
  */
-const avatar = (id, hash, size) => makeURL(`/avatars/${id}/${hash}`, { size });
+const avatar = (id, hash, options) => dynamicMakeURL(`/avatars/${id}/${hash}`, hash, options);
 
 /**
+ * For server icons
  * @param {string} id 
  * @param {string} hash 
- * @param {number} size 
+ * @param {ImageURLOptions} options 
  * @returns {string}
  */
-const icon = (id, hash, size) => makeURL(`/icons/${id}/${hash}`, { size });
+const icon = (id, hash, options) => dynamicMakeURL(`/icons/${id}/${hash}`, hash, options);
 
 /**
  * @param {string} id 
@@ -65,6 +64,8 @@ const icon = (id, hash, size) => makeURL(`/icons/${id}/${hash}`, { size });
 const sticker = (id) => makeURL(`/stickers/${id}`, { extension: 'png' });
 
 module.exports = {
+  get allowed_sizes() { return allowed_sizes; },
+  get allowed_extensions() { return allowed_extensions; },
   get avatar() { return avatar; },
   get sticker() { return sticker; },
   get icon() { return icon; }

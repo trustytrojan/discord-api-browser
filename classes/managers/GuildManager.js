@@ -9,6 +9,7 @@ module.exports = class GuildManager extends require('./DataManager') {
   /**
    * Fetches and caches the desired Guild object from Discord.
    * @param {string} id 
+   * @return {Promise<Guild>}
    */
   async fetch(id) {
     {
