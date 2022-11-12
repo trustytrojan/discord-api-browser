@@ -58,6 +58,15 @@ const avatar = (id, hash, options) => dynamicMakeURL(`/avatars/${id}/${hash}`, h
 const icon = (id, hash, options) => dynamicMakeURL(`/icons/${id}/${hash}`, hash, options);
 
 /**
+ * For server discovery splash banners
+ * @param {string} guild_id 
+ * @param {string} hash 
+ * @param {ImageURLOptions} options 
+ * @returns {string}
+ */
+const splash = (guild_id, hash, options) => makeURL(`/discovery-splashes/${guild_id}/${hash}`, options);
+
+/**
  * @param {string} id 
  * @returns {string}
  */
@@ -68,5 +77,6 @@ module.exports = {
   get allowed_extensions() { return allowed_extensions; },
   get avatar() { return avatar; },
   get sticker() { return sticker; },
-  get icon() { return icon; }
+  get icon() { return icon; },
+  get splash() { return splash; }
 };

@@ -94,9 +94,9 @@ module.exports = function(html_files, client) {
           default: {
             const { id, name, htmlTableRows } = await client.guilds.fetch(route[1]);
             html = html_files.get('guild-view')
-              .replace('${guild.name}', guild.name)
-              .replace('${guild.id}', guild.id)
-              .replace('${guild}', guild.htmlTableRows);
+              .replace('${guild.name}', name)
+              .replace('${guild.id}', id)
+              .replace('${guild}', htmlTableRows);
           }
         }
         res.end(html);

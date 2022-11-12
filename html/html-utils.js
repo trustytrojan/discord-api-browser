@@ -21,10 +21,23 @@ function tr(...cells) {
  */
 const img = (url, alt) => `<img src="${url}"${alt ? ` alt="${alt}"` : ''}>`;
 
+/**
+ * @param {number} n 
+ */
+function toHexColorString(n) {
+  
+}
+
+/**
+ * @param {string} color 
+ */
+const color_square = (color) => `<div style="width:20px;height:20px;background-color:${color}"></div>`;
+
 module.exports = {
   get a() { return a; },
   get th() { return th; },
   get td() { return td; },
   get tr() { return tr; },
-  get img() { return img; }
+  get img() { return img; },
+  get color_square() { return color_square; }
 };

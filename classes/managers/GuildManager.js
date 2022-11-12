@@ -17,7 +17,7 @@ module.exports = class GuildManager extends require('./DataManager') {
       if(cached) return cached;
     }
     const data = await super.fetch(`/guilds/${id}`);
-    this.cache.set(id, new Guild(data, this.client)).get(id);
+    return this.cache.set(id, new Guild(data, this.client)).get(id);
   }
 
   /**

@@ -12,7 +12,6 @@ module.exports = class User extends Base {
   /** @type {number} */ public_flags;
   /** @type {number} */ flags;
   /** @type {string} */ banner_color;
-  /** @type {number} */ accent_color;
 
   constructor(data, client) {
     super(data, client);
@@ -34,25 +33,19 @@ module.exports = class User extends Base {
   }
 
   get htmlTableRows() {
-    const { th, td, tr, a, img } = require('../html/html-utils');
-    let links;
-    {
-      const avatars = [];
-      for(const size of cdn.allowed_sizes) {
-        const url = this.avatarURL({ size });
-        avatars.push(a(url, size));
-      }
-      links = avatars.join(' ');
-      const url = this.avatarURL({ size: 256 });
-      links += '<br>';
-      links += a(url, img(url));
-    }
-
+    const { th, td, tr, color_square } = require('../html/html-utils');
+    const avatars = require('../utils').allImageSizes(this, this.avatarURL);
+    //const banners = require('../utils').allImageSizes(this, this.bannerURL);
+    console.log(this.accent_color, this.banner_color)
     return [
       super.htmlTableRows,
       tr(th('username'), td(this.username)),
       tr(th('discriminator'), td(this.discriminator)),
-      tr(th('avatar'), td(links)),
+      tr(th('bot'), td(this.bot)),
+      tr(th('accent_color'), td(color_square(this.accent_color))),
+      tr(th('banner_color'), td(color_square(this.banner_color))),
+      //tr(th('banner'), td(banners)),
+      tr(th('avatar'), td(avatars)),
     ].join('');
   }
 };

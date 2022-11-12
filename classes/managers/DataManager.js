@@ -1,5 +1,5 @@
 module.exports = class DataManager {
-  static base_url = 'https://discord.com/api/v10';
+  static base_url = 'https://discord.com/api/v9';
 
   /** @type {Client} */ client;
   /** @type {Map<string,any>} */ cache;
