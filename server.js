@@ -4,6 +4,7 @@ const DMChannel = require('./classes/channels/DMChannel');
 const GroupDMChannel = require('./classes/channels/GroupDMChannel');
 const { tr, td, a } = require('./html/html-utils');
 const { insertClientInfoIntoHtml } = require('./utils');
+const { once } = require('events');
 
 /**
  * This should be called by main.js to generate a server function.
